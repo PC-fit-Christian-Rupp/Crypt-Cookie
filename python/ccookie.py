@@ -1,8 +1,9 @@
 import time
-import random
+from Crypto.Random import random
 import string
 import os
 from Crypto.Cipher import AES
+import unicodedata
 
 class ccookie:
 
@@ -22,25 +23,32 @@ class ccookie:
 		pass
 
 	def __encrypt(self, strin):
-		pass
+		return AES.new(str.encode(self.__key), AES.MODE_ECB).encrypt(strin)
 
 	def __decrypt(self, strin):
-		pass
+		return AES.new(str.encode(self.__key), AES.MODE_ECB).decrypt(strin)
 
-	def isValid(self,strin):
-		pass
+	def isValid(self):
+		return 1
 
 	def getKey(self):
-		self.isValid()
-		if os.path.isfile('key.asc'):
-			f = open('key.asc', 'r')
-			self.__key = f.read()
-			f.close()
-		else:
-			f = open('key.asc', 'w')
-			self.__key = self.__generateKey()
-			f.write(self.__key)
-			f.close()
+		if self.isValid():
+			if os.path.isfile('key.asc'):
+				f = open('key.asc', 'r')
+				self.__key = f.read()
+				f.close()
+			else:
+				f = open('key.asc', 'w')
+				self.__key = self.__generateKey()
+				f.write(self.__key)
+				f.close()
+			return self.__key
+
+	def getInitalVektor(self):
+		pass
+
+	def __generateInitialVektor(self):
+		pass
 
 	def __generateKey(self):
-		return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
+		return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
