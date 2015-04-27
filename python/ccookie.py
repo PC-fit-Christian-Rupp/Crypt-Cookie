@@ -28,7 +28,7 @@ class ccookie:
 		return AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).encrypt(self.__pad(strin))
 
 	def __decrypt(self, strin):
-		return self.__unpad(AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).decrypt(strin))
+		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).decrypt(strin)).decode('utf-8'))
 
 	def __pad(self, strin):
 		i = 16 - (len(strin)%16)
@@ -37,7 +37,12 @@ class ccookie:
 		return strin
 
 	def __unpad(self, strin):
-		pass
+		for i in range(16):
+			if strin[-1]=='\x0b':
+				strin = strin[:-1]
+			else:
+				i = 16
+		return strin
 
 	def isValid(self):
 		return 1
