@@ -1,16 +1,24 @@
 import time
+import datetime
 from Crypto.Random import random
 from Crypto import Random
 import string
 import os
 from Crypto.Cipher import AES
-import unicodedata
+from http import cookies
 
 class ccookie:
 
 	def __init__(self):
 		self.getKey()
 		self.getInitialVector()
+		if "HTTP_COOKIE" in os.environ:
+			self.__cookie = Cookie.SimpleCookie(os.environ["HTTP_COOKIE"])
+		else:
+			self.__newCookie()
+
+	def __newCookie(self):
+		pass
 
 	def login(user, password):
 		pass
