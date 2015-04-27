@@ -2,6 +2,7 @@ import time
 import random
 import string
 import os
+from Crypto.Cipher import AES
 
 class ccookie:
 
@@ -32,9 +33,14 @@ class ccookie:
 	def getKey(self):
 		self.isValid()
 		if os.path.isfile('key.asc'):
-			pass
+			f = open('key.asc', 'r')
+			self.__key = f.read()
+			f.close()
 		else:
-			pass
+			f = open('key.asc', 'w')
+			self.__key = self.__generateKey()
+			f.write(self.__key)
+			f.close()
 
 	def __generateKey(self):
 		return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
