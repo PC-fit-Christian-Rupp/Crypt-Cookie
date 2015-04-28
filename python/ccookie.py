@@ -27,7 +27,14 @@ class ccookie:
 		self.__cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie["session"][self.__encrypt('IP')] = self.__encrypt(os.environ["REMOTE_ADDR"])
 
-	def login(user, password):
+	def login(self, user, password):
+		self.__cookie['session'][self.__encrypt('USER')] = self.__encrypt(user)
+		self.__cookie['session'][self.__encrypt('PASSWPRD')] = self.__encrypt(password)
+
+	def getUser(self):
+		pass
+
+	def getPassword(self):
 		pass
 
 	def addValue(self, keyword, value):
