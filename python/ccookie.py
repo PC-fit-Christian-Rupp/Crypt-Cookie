@@ -32,10 +32,16 @@ class ccookie:
 		self.__cookie['session'][self.__encrypt('PASSWPRD')] = self.__encrypt(password)
 
 	def getUser(self):
-		pass
+		try:
+			pass
+		except (KeyError):
+			pass
 
 	def getPassword(self):
-		pass
+		try:
+			pass
+		except (KeyError):
+			pass
 
 	def addValue(self, keyword, value):
 		pass
