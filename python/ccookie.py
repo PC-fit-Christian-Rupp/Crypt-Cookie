@@ -6,6 +6,7 @@ import string
 import os
 from Crypto.Cipher import AES
 from http import cookies
+import cgi
 
 class ccookie:
 
@@ -13,12 +14,18 @@ class ccookie:
 		self.getKey()
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
-			self.__cookie = Cookie.SimpleCookie(os.environ["HTTP_COOKIE"])
+			self.__cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
+			self.isValid()
 		else:
 			self.__newCookie()
 
 	def __newCookie(self):
-		pass
+		self.__cookie = cookies.SimpleCookie()
+		self.__cookie["session"]= random.randint(0, 100000000000000000)
+		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
+		self.__cookie["session"]["path"] = '/'
+		self.__cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
+		self.__cookie["session"][self.__encrypt('IP')] = self.__encrypt(os.environ["REMOTE_ADDR"])
 
 	def login(user, password):
 		pass
