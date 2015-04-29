@@ -50,7 +50,7 @@ class ccookie:
 		self.__cookie[self.__encrypt(keyword)] = self.__encrypt(value)
 
 	def deleteValue(self, keyword):
-		pass
+		self.__cookie[self.__encrypt(keyword)] = None
 
 	def getValue(self, keyword):
 		return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
