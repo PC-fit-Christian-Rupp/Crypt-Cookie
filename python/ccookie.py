@@ -53,7 +53,7 @@ class ccookie:
 		pass
 
 	def getValue(self, keyword):
-		pass
+		return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).encrypt(self.__pad(strin))
@@ -76,7 +76,7 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		if self.__cookie['session'][self.__encrypt('IP')] = self.__encrypt(os.environ['REMOTE_ADDR']):
+		if self.__cookie['session'][self.__encrypt('IP')].value = self.__encrypt(os.environ['REMOTE_ADDR']):
 			return 1
 		else:
 			return 0
