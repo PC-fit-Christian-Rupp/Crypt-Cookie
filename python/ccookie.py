@@ -46,7 +46,8 @@ class ccookie:
 			pass
 
 	def addValue(self, keyword, value):
-		pass
+		self.isValid()
+		self.__cookie[self.__encrypt(keyword)] = self.__encrypt(value)
 
 	def deleteValue(self, keyword):
 		pass
