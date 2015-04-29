@@ -29,7 +29,7 @@ class ccookie:
 
 	def login(self, user, password):
 		self.__cookie['session'][self.__encrypt('USER')] = self.__encrypt(user)
-		self.__cookie['session'][self.__encrypt('PASSWPRD')] = self.__encrypt(password)
+		self.__cookie['session'][self.__encrypt('PASSWORD')] = self.__encrypt(password)
 
 	def getUser(self):
 		self.isValid()
@@ -75,7 +75,10 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		return 1
+		if self.__cookie['session'][self.__encrypt('IP')] = self.__encrypt(os.environ['REMOTE_ADDR']):
+			return 1
+		else:
+			return 0
 
 	def getKey(self):
 		if self.isValid():
