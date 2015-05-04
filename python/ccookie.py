@@ -7,6 +7,7 @@ import os
 from Crypto.Cipher import AES
 from http import cookies
 import cgi
+import sys
 
 class ccookie:
 
@@ -46,7 +47,8 @@ class ccookie:
 			self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD'))
 
 	def __keyErrorHandler(self, function, enckey):
-		pass
+		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
+		sys.exit(msg)
 
 	def addValue(self, keyword, value):
 		self.isValid()
