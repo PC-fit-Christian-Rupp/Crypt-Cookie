@@ -55,7 +55,7 @@ class ccookie:
 	def deleteValue(self, keyword):
 		self.isValid()
 		try:
-			self.__cookie[self.__encrypt(keyword)] = None
+			del self.__cookie[self.__encrypt(keyword)]
 		except (KeyError):
 			self.__keyErrorHandler('deleteValue', self.__encrypt(keyword))
 
@@ -87,7 +87,7 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		if self.__cookie['session'][self.__encrypt('IP')].value = self.__encrypt(os.environ['REMOTE_ADDR']):
+		if self.__cookie['session'][self.__encrypt('IP')].value == self.__encrypt(os.environ['REMOTE_ADDR']):
 			return 1
 		else:
 			return 0
