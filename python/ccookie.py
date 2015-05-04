@@ -50,10 +50,18 @@ class ccookie:
 		self.__cookie[self.__encrypt(keyword)] = self.__encrypt(value)
 
 	def deleteValue(self, keyword):
-		self.__cookie[self.__encrypt(keyword)] = None
+		self.isValid()
+		try:
+			self.__cookie[self.__encrypt(keyword)] = None
+		except (KeyError):
+			pass
 
 	def getValue(self, keyword):
-		return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
+		self.isValid()
+		try:
+			return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
+		except (KeyError):
+			pass
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).encrypt(self.__pad(strin))
