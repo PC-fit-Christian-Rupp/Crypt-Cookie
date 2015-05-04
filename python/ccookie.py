@@ -45,6 +45,9 @@ class ccookie:
 		except (KeyError):
 			pass
 
+	def keyErrorHandler(self, function, enckey):
+		pass
+
 	def addValue(self, keyword, value):
 		self.isValid()
 		self.__cookie[self.__encrypt(keyword)] = self.__encrypt(value)
