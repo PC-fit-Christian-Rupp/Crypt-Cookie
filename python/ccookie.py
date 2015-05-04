@@ -34,18 +34,18 @@ class ccookie:
 	def getUser(self):
 		self.isValid()
 		try:
-			pass
+			return self.__decode(self.__cookie['session'][self.__encrypt('USER')].value)
 		except (KeyError):
-			pass
+			self.__keyErrorHandler('getUser', self.__encrypt('USER'))
 
 	def getPassword(self):
 		self.isValid()
 		try:
-			pass
+			return self.__decode(self.__cookie['session'][self.__encrypt('PASSWORD')].value)
 		except (KeyError):
-			pass
+			self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD'))
 
-	def keyErrorHandler(self, function, enckey):
+	def __keyErrorHandler(self, function, enckey):
 		pass
 
 	def addValue(self, keyword, value):
@@ -57,14 +57,14 @@ class ccookie:
 		try:
 			self.__cookie[self.__encrypt(keyword)] = None
 		except (KeyError):
-			pass
+			self.__keyErrorHandler('deleteValue', self.__encrypt(keyword))
 
 	def getValue(self, keyword):
 		self.isValid()
 		try:
 			return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
 		except (KeyError):
-			pass
+			self.__keyErrorHandler('getValue', self.__encrypt(keyword))
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).encrypt(self.__pad(strin))
