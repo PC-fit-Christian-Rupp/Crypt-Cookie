@@ -25,54 +25,58 @@ class ccookie:
 		self.__cookie["session"]= random.randint(0, 100000000000000000)
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
-		self.__cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
-		self.__cookie["session"][self.__encrypt('IP')] = self.__encrypt(os.environ["REMOTE_ADDR"])
+		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
+		self.__cookie["session"][self.__encrypt('IP').decode('utf-16')] = self.__encrypt(os.environ["REMOTE_ADDR"])
+
+	def __expiration(self):
+		return datetime.datetime.now() + datetime.timedelta(minutes=15)
 
 	def login(self, user, password):
-		self.__cookie['session'][self.__encrypt('USER')] = self.__encrypt(user)
-		self.__cookie['session'][self.__encrypt('PASSWORD')] = self.__encrypt(password)
+		if self.isValid():
+			self.__cookie['session'][self.__encrypt('USER').decode('utf-16')] = self.__encrypt(user)
+			self.__cookie['session'][self.__encrypt('PASSWORD').decode('utf-16')] = self.__encrypt(password)
 
 	def getUser(self):
-		self.isValid()
-		try:
-			return self.__decode(self.__cookie['session'][self.__encrypt('USER')].value)
-		except (KeyError):
-			self.__keyErrorHandler('getUser', self.__encrypt('USER'))
+		if self.isValid():
+			try:
+				return self.__decode(self.__cookie['session'][self.__encrypt('USER').decode('utf-16')].value)
+			except (KeyError):
+				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf-16'))
 
 	def getPassword(self):
-		self.isValid()
-		try:
-			return self.__decode(self.__cookie['session'][self.__encrypt('PASSWORD')].value)
-		except (KeyError):
-			self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD'))
+		if self.isValid():
+			try:
+				return self.__decode(self.__cookie['session'][self.__encrypt('PASSWORD').decode('utf-16')].value)
+			except (KeyError):
+				self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD').decode('utf-16'))
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
 		sys.exit(msg)
 
 	def addValue(self, keyword, value):
-		self.isValid()
-		self.__cookie[self.__encrypt(keyword)] = self.__encrypt(value)
+		if self.isValid():
+			self.__cookie[self.__encrypt(keyword).decode('utf-16')] = self.__encrypt(value)
 
 	def deleteValue(self, keyword):
-		self.isValid()
-		try:
-			del self.__cookie[self.__encrypt(keyword)]
-		except (KeyError):
-			self.__keyErrorHandler('deleteValue', self.__encrypt(keyword))
+		if self.isValid():
+			try:
+				del self.__cookie[self.__encrypt(keyword).decode('utf-16')]
+			except (KeyError):
+				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf-16'))
 
 	def getValue(self, keyword):
-		self.isValid()
-		try:
-			return self.__decode(self.__cookie[self.__encrypt(keyword)].value)
-		except (KeyError):
-			self.__keyErrorHandler('getValue', self.__encrypt(keyword))
+		if self.isValid():
+			try:
+				return self.__decode(self.__cookie[self.__encrypt(keyword).decode('utf-16')].value)
+			except (KeyError):
+				self.__keyErrorHandler('getValue', self.__encrypt(keyword).decode('utf-16'))
 
 	def __encrypt(self, strin):
-		return AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).encrypt(self.__pad(strin))
+		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
 
 	def __decrypt(self, strin):
-		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_ECB, self.__IV).decrypt(strin)).decode('utf-8'))
+		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).decrypt(strin)).decode('utf-8'))
 
 	def __pad(self, strin):
 		i = 16 - (len(strin)%16)
@@ -89,36 +93,34 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		if self.__cookie['session'][self.__encrypt('IP')].value == self.__encrypt(os.environ['REMOTE_ADDR']):
+		if self.__cookie['session'][self.__encrypt('IP').decode('utf-16')].value == self.__encrypt(os.environ['REMOTE_ADDR']):
 			return 1
 		else:
 			return 0
 
 	def getKey(self):
-		if self.isValid():
-			if os.path.isfile('key.asc'):
-				f = open('key.asc', 'r')
-				self.__key = f.read()
-				f.close()
-			else:
-				f = open('key.asc', 'w')
-				self.__key = self.__generateKey()
-				f.write(self.__key)
-				f.close()
-			return self.__key
+		if os.path.isfile('key.asc'):
+			f = open('key.asc', 'r')
+			self.__key = f.read()
+			f.close()
+		else:
+			f = open('key.asc', 'w')
+			self.__key = self.__generateKey()
+			f.write(self.__key)
+			f.close()
+		return self.__key
 
 	def getInitialVector(self):
-		if self.isValid():
-			if os.path.isfile('initalVector.asc'):
-				f = open('initialVector.asc', 'r')
-				self.__IV = f.read()
-				f.close()
-			else:
-				f = open('initialVector.asc', 'w')
-				self.__IV = self.__generateInitialVector()
-				f.write(str(self.__IV))
-				f.close()
-			return self.__IV
+		if os.path.isfile('initalVector.asc'):
+			f = open('initialVector.asc', 'r')
+			self.__IV = f.read()
+			f.close()
+		else:
+			f = open('initialVector.asc', 'w')
+			self.__IV = self.__generateInitialVector()
+			f.write(str(self.__IV))
+			f.close()
+		return self.__IV
 
 	def __generateInitialVector(self):
 		return Random.new().read(AES.block_size)
