@@ -8,6 +8,7 @@ from Crypto.Cipher import AES
 from http import cookies
 import cgi
 import sys
+from random import SystemRandom
 
 class ccookie:
 
@@ -126,4 +127,4 @@ class ccookie:
 		return Random.new().read(AES.block_size)
 
 	def __generateKey(self):
-		return ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
+		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
