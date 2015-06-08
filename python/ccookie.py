@@ -58,19 +58,19 @@ class ccookie:
 
 	def addValue(self, keyword, value):
 		if self.isValid():
-			self.__cookie[self.__encrypt(keyword).decode('utf-16')] = self.__encrypt(value)
+			self.__cookie[haslib.sha1(str.encode(keyword)).hexdigest()] = self.__encrypt(value)
 
 	def deleteValue(self, keyword):
 		if self.isValid():
 			try:
-				del self.__cookie[self.__encrypt(keyword).decode('utf-16')]
+				del self.__cookie[hashlib.sha1(str.encode(keyword)).hexdigest()]
 			except (KeyError):
 				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf-16'))
 
 	def getValue(self, keyword):
 		if self.isValid():
 			try:
-				return self.__decode(self.__cookie[self.__encrypt(keyword).decode('utf-16')].value)
+				return self.__decode(self.__cookie[hashlib.sha1(str.encode(keyword)).hexdigest()].value)
 			except (KeyError):
 				self.__keyErrorHandler('getValue', self.__encrypt(keyword).decode('utf-16'))
 
