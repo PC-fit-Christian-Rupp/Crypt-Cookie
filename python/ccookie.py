@@ -9,6 +9,7 @@ from http import cookies
 import cgi
 import sys
 from random import SystemRandom
+import hashlib
 
 class ccookie:
 
@@ -27,27 +28,27 @@ class ccookie:
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
 		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
-		self.__cookie["session"][self.__encrypt('IP').decode('utf-16')] = self.__encrypt(os.environ["REMOTE_ADDR"])
+		self.__cookie[hashlib.sha1(str.encode('IP')).hexdigest()] = self.__encrypt(os.environ["REMOTE_ADDR"])
 
 	def __expiration(self):
 		return datetime.datetime.now() + datetime.timedelta(minutes=15)
 
 	def login(self, user, password):
 		if self.isValid():
-			self.__cookie['session'][self.__encrypt('USER').decode('utf-16')] = self.__encrypt(user)
-			self.__cookie['session'][self.__encrypt('PASSWORD').decode('utf-16')] = self.__encrypt(password)
+			self.__cookie[hashlib.sha1(str.encode('USER')).hexdigest()] = self.__encrypt(user)
+			self.__cookie[hashlib.sha1(str.encode('PASSWORD')).hexdigest()] = self.__encrypt(password)
 
 	def getUser(self):
 		if self.isValid():
 			try:
-				return self.__decode(self.__cookie['session'][self.__encrypt('USER').decode('utf-16')].value)
+				return self.__decode(self.__cookie[hashlib.sha1(str.encode('USER')).hexdigest()].value)
 			except (KeyError):
 				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf-16'))
 
 	def getPassword(self):
 		if self.isValid():
 			try:
-				return self.__decode(self.__cookie['session'][self.__encrypt('PASSWORD').decode('utf-16')].value)
+				return self.__decode(self.__cookie[haslib.sha1(str.encode('PASSWORD')).hexdigest()].value)
 			except (KeyError):
 				self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD').decode('utf-16'))
 
