@@ -28,7 +28,13 @@ class ccookie:
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
 		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
-		self.__cookie[hashlib.sha1(str.encode('IP')).hexdigest()] = self.__encrypt(os.environ["REMOTE_ADDR"])
+		self.__cookie[hashlib.sha1(str.encode('IP')).hexdigest()] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
+
+	def __toInt(self, a):
+		return int.from_bytes(a, byteorder='big')
+
+	def __toByte(self, a):
+		return a.to_bytes((a.bit_length()+7)//8, byteorder='big')
 
 	def __expiration(self):
 		return datetime.datetime.now() + datetime.timedelta(minutes=15)
@@ -78,7 +84,7 @@ class ccookie:
 		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
 
 	def __decrypt(self, strin):
-		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).decrypt(strin)).decode('utf-8'))
+		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).decrypt(strin)).decode('utf8'))
 
 	def __pad(self, strin):
 		i = 16 - (len(strin)%16)
@@ -95,7 +101,8 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		if self.__cookie['session'][self.__encrypt('IP').decode('utf-16')].value == self.__encrypt(os.environ['REMOTE_ADDR']):
+		ip = int(self.__cookie[hashlib.sha1(str.encode('IP')).hexdigest()].value)
+		if self.__decrypt(self.__toByte(ip)) == os.environ['REMOTE_ADDR']:
 			return 1
 		else:
 			return 0
