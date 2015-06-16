@@ -38,6 +38,12 @@ class ccookie:
 	def __expiration(self):
 		return datetime.datetime.now() + datetime.timedelta(minutes=15)
 
+	def hasKey(self, a):
+		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
+			return 1
+		else:
+			return 0
+
 	def login(self, user, password):
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))

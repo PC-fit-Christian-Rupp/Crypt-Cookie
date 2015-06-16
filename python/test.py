@@ -54,6 +54,11 @@ print('\tKey:\t'+key)
 print('\tValue:\t'+value+'\n')
 a.addValue(key, value)
 print('Key and value added!\t\t\tSUCCESS')
+if a.hasKey(key)==1:
+	print('hasKey!\t\t\t\t\tSUCCESS')
+else:
+	print('hasKey!\t\t\t\t\tFAILED')
+	sys.exit(0)
 if a.getValue(key)==value:
 	print(a.getValue(key)+' is the correct value!\t\tSUCCESS')
 else:
