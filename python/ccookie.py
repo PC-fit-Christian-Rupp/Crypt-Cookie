@@ -125,7 +125,6 @@ class ccookie:
 			return 0
 
 	def getKey(self):
-		self.__updateExpirationTime()
 		if os.path.isfile('key.asc'):
 			f = open('key.asc', 'r')
 			self.__key = f.read()
@@ -138,7 +137,6 @@ class ccookie:
 		return self.__key
 
 	def getInitialVector(self):
-		self.__updateExpirationTime()
 		if os.path.isfile('initalVector.asc'):
 			f = open('initialVector.asc', 'r')
 			self.__IV = f.read()
