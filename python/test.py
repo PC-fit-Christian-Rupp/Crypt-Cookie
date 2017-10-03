@@ -2,6 +2,7 @@ import ccookie
 import os
 import hashlib
 import sys
+from time import sleep
 
 os.environ['SERVER_NAME']='Test Server Name'
 os.environ['REMOTE_ADDR']='255.255.255.255'
@@ -11,19 +12,19 @@ print('Remote address set to "' +os.environ['REMOTE_ADDR'] +'" for the test rout
 print('Set enviroment variables!\t\tFINISHED')
 print('-------------------------------------------------------------------------------')
 print('Generate test crypt cookie!\n')
-a = ccookie.ccookie()
+oCookie = ccookie.ccookie()
 print('Generate test crypt cookei!\t\tFINISHED')
 print('-------------------------------------------------------------------------------')
 print('Test session data!\n')
-print('Session:\t' + a._ccookie__cookie['session'].value)
-print('Domain:\t\t' + a._ccookie__cookie['session']['domain'])
-print('Path:\t\t' + a._ccookie__cookie['session']['path'])
-print('Expires:\t' + a._ccookie__cookie['session']['expires'])
-print('Encrypted IP:\t'+ a._ccookie__cookie[str(a._ccookie__toInt(a._ccookie__encrypt('IP')))].value+'\n')
+print('Session:\t' + oCookie._ccookie__cookie['session'].value)
+print('Domain:\t\t' + oCookie._ccookie__cookie['session']['domain'])
+print('Path:\t\t' + oCookie._ccookie__cookie['session']['path'])
+print('Expires:\t' + oCookie._ccookie__cookie['session']['expires'])
+print('Encrypted IP:\t'+ oCookie._ccookie__cookie[str(oCookie._ccookie__toInt(oCookie._ccookie__encrypt('IP')))].value+'\n')
 print('Test session data!\t\t\tFINISHED')
 print('-------------------------------------------------------------------------------')
 print('Validation test!\n')
-if a.isValid():
+if oCookie.isValid():
 	print('Validation test!\t\t\tFINISHED')
 else:
 	print('Validation test!\t\t\tFAILED')
@@ -35,15 +36,15 @@ print('Login data test!\n')
 print('Testdata:')
 print('\tUser name:\t'+usr)
 print('\tPassword:\t'+pwd+'\n')
-a.login(usr, pwd)
-if not(a.getUser()==usr):
-	print(a.getUser()+' is not the correct user name!\tFAILED')
+oCookie.login(usr, pwd)
+if not(oCookie.getUser()==usr):
+	print(oCookie.getUser()+' is not the correct user name!\tFAILED')
 else:
-	print(a.getUser()+' is the correct user name!\tSUCCESS')
-if not(a.getPassword()==pwd):
-	print(a.getPassword()+' is not the correct password!\tFAILED')
+	print(oCookie.getUser()+' is the correct user name!\tSUCCESS')
+if not(oCookie.getPassword()==pwd):
+	print(oCookie.getPassword()+' is not the correct password!\tFAILED')
 else:
-	print(a.getPassword()+' is the correct password!\tSUCCESS')
+	print(oCookie.getPassword()+' is the correct password!\tSUCCESS')
 print('Login data test!\t\t\tFINISHED')
 print('-------------------------------------------------------------------------------')
 print('Check key value funktions!\n')
@@ -52,18 +53,29 @@ key = 'Auto'
 value = 'Porsche'
 print('\tKey:\t'+key)
 print('\tValue:\t'+value+'\n')
-a.addValue(key, value)
+oCookie.addValue(key, value)
 print('Key and value added!\t\t\tSUCCESS')
-if a.hasKey(key)==1:
+if oCookie.hasKey(key)==1:
 	print('hasKey!\t\t\t\t\tSUCCESS')
 else:
 	print('hasKey!\t\t\t\t\tFAILED')
 	sys.exit(0)
-if a.getValue(key)==value:
-	print(a.getValue(key)+' is the correct value!\t\tSUCCESS')
+if oCookie.getValue(key)==value:
+	print(oCookie.getValue(key)+' is the correct value!\t\tSUCCESS')
 else:
-	print(a.getValue(key)+' is not the correct  value!\t\tFAILED')
-a.deleteValue(key)
+	print(oCookie.getValue(key)+' is not the correct  value!\t\tFAILED')
+oCookie.deleteValue(key)
 print('Value deleted!\t\t\t\tSUCCESS')
 print('Check key value functions!\t\tFINISHED')
+print('-------------------------------------------------------------------------------')
+print('Test crypt cookie with update expiration\n')
+oCookie = ccookie.ccookie(updateExpiration = True)
+strExpiration = oCookie._ccookie__cookie['session']['expires']
+sleep(5)
+oCookie.login(usr, pwd)
+if strExpiration != oCookie._ccookie__cookie['session']['expires']:
+	print('Update expiration is working!\t\tSUCCESS')
+else:
+	print('Update expiration is not working!\tFAILED')
+print('Test of update expiration!\t\tFINISHED')
 print('All tests FINISHED')
