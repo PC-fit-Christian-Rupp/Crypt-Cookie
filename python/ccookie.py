@@ -12,7 +12,8 @@ from random import SystemRandom
 
 class ccookie:
 
-	def __init__(self):
+	def __init__(self, updateExpiration = False):
+		self.__updateExpiration = updateExpiration
 		self.getKey()
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
@@ -26,7 +27,8 @@ class ccookie:
 		self.__cookie["session"]= random.randint(0, 100000000000000000)
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
-		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
+		self.__updateExpirationTime()
+		#self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
 
 	def __toInt(self, a):
@@ -39,17 +41,20 @@ class ccookie:
 		return datetime.datetime.now() + datetime.timedelta(minutes=15)
 
 	def hasKey(self, a):
+		self.__updateExpirationTime()
 		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
 			return 1
 		else:
 			return 0
 
 	def login(self, user, password):
+		self.__updateExpirationTime()
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))
 			self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))] = self.__toInt(self.__encrypt(password))
 
 	def getUser(self):
+		self.__updateExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('USER')))].value)))
@@ -57,6 +62,7 @@ class ccookie:
 				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf-16'))
 
 	def getPassword(self):
+		self.__updateExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
@@ -68,10 +74,12 @@ class ccookie:
 		sys.exit(msg)
 
 	def addValue(self, keyword, value):
+		self.__updateExpirationTime()
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt(keyword)))] = self.__toInt(self.__encrypt(value))
 
 	def deleteValue(self, keyword):
+		self.__updateExpirationTime()
 		if self.isValid():
 			try:
 				del self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]
@@ -79,6 +87,7 @@ class ccookie:
 				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf-16'))
 
 	def getValue(self, keyword):
+		self.__updateExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
@@ -106,6 +115,7 @@ class ccookie:
 		return strin
 
 	def isValid(self):
+		self.__updateExpirationTime()
 		ip = int(self.__cookie[str(self.__toInt(self.__encrypt('IP')))].value)
 		if self.__decrypt(self.__toByte(ip)) == os.environ['REMOTE_ADDR']:
 			return 1
@@ -113,6 +123,7 @@ class ccookie:
 			return 0
 
 	def getKey(self):
+		self.__updateExpirationTime()
 		if os.path.isfile('key.asc'):
 			f = open('key.asc', 'r')
 			self.__key = f.read()
@@ -125,6 +136,7 @@ class ccookie:
 		return self.__key
 
 	def getInitialVector(self):
+		self.__updateExpirationTime()
 		if os.path.isfile('initalVector.asc'):
 			f = open('initialVector.asc', 'r')
 			self.__IV = f.read()
@@ -141,3 +153,7 @@ class ccookie:
 
 	def __generateKey(self):
 		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
+
+	def __updateExpirationTime(self):
+		if self.__updateExpiration:
+			self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
