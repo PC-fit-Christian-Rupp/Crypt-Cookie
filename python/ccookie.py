@@ -12,9 +12,11 @@ from random import SystemRandom
 
 class ccookie:
 
-	def __init__(self, updateExpiration = False, timedeltaMinutes = 15):
-		self.__key =
-		self.__IV =
+	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, key = None, IV = None):
+		self.__key = key
+		self.__IV = IV
+		self.__validateKey()
+		self.__validateVector()
 		self.__updateExpiration = updateExpiration
 		self.__timedeltaMinutes = timedeltaMinutes
 		self.getKey()
@@ -127,6 +129,8 @@ class ccookie:
 			return 0
 
 	def getKey(self):
+		if self.__key != None:
+			return self.__key
 		if os.path.isfile('key.asc'):
 			f = open('key.asc', 'r')
 			self.__key = f.read()
@@ -139,6 +143,8 @@ class ccookie:
 		return self.__key
 
 	def getInitialVector(self):
+		if self.__IV != None:
+			return self.__IV
 		if os.path.isfile('initalVector.asc'):
 			f = open('initialVector.asc', 'r')
 			self.__IV = f.read()
@@ -154,8 +160,17 @@ class ccookie:
 		return Random.new().read(AES.block_size)
 
 	def __generateKey(self):
-		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
+		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
 
 	def __updateExpirationTime(self):
 		if self.__updateExpiration:
 			self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
+
+	def __validateKey(self):
+		if (self.__key != None) and (len(self.__key) != 32):
+			raise Exception("invalid key")
+
+	def __validateVector(self):
+		if (self.__IV != None) and (len(self.__IV.encode('utf-8')) != 16):
+			raise Exception("invalid vector")
+		
