@@ -28,7 +28,6 @@ class ccookie:
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
 		self.__updateExpirationTime()
-		#self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
 
 	def __toInt(self, a):
