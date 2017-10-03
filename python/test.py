@@ -4,6 +4,11 @@ import hashlib
 import sys
 from time import sleep
 import datetime
+from Crypto.Cipher import AES
+from Crypto.Random import random
+from Crypto import Random
+from random import SystemRandom
+import string
 
 os.environ['SERVER_NAME']='Test Server Name'
 os.environ['REMOTE_ADDR']='255.255.255.255'
@@ -100,4 +105,18 @@ if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 else:
 	print('Setting with expiration of 60 minutes is not working!\t\t\tFAILED')
 print('Test for different expiration times!\t\t\t\t\tFINISHED')
+print('--------------------------------------------------------------------------------')
+print('Test with individual keys!\n')
+oInitialVector = Random.new().read(AES.block_size)
+oKey = ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
+oCookie = ccookie.ccookie(AESKey=oKey, AESInitialVector=oInitialVector)
+if oCookie.getKey() == oKey:
+	print('Individual key correct set!\t\t\t\t\t\tSUCCESS')
+else:
+	print('Individual key not correct set!\t\t\t\t\t\tFAILED')
+if oCookie.getInitialVector() == oInitialVector:
+	print('Individual vector correct set!\t\t\t\t\t\tSUCCESS')
+else:
+	print('Individual vector not correct set!\t\t\t\t\tFAILED')
+print('Test with indiviual keys!\t\t\t\t\t\tFINISHED')
 print('All tests FINISHED')
