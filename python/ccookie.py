@@ -28,7 +28,7 @@ class ccookie:
 		self.__cookie["session"]= random.randint(0, 100000000000000000)
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
-		self.__updateExpirationTime()
+		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
 
 	def __toInt(self, a):
@@ -40,7 +40,7 @@ class ccookie:
 	def __expiration(self):
 		if self.__timedeltaMinutes==None:
 			return datetime.datetime.now() + datetime.timedelta(days=30)
-		return datetime.datetime.now() + datetime.timedelta(self.__timedeltaMinutes)
+		return datetime.datetime.now() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
 	def hasKey(self, a):
 		self.__updateExpirationTime()
