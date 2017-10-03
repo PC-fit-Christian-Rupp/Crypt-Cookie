@@ -12,8 +12,9 @@ from random import SystemRandom
 
 class ccookie:
 
-	def __init__(self, updateExpiration = False):
+	def __init__(self, updateExpiration = False, timedeltaMinutes = 15):
 		self.__updateExpiration = updateExpiration
+		self.__timedeltaMinutes = timedeltaMinutes
 		self.getKey()
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
@@ -37,7 +38,9 @@ class ccookie:
 		return a.to_bytes((a.bit_length()+7)//8, byteorder='big')
 
 	def __expiration(self):
-		return datetime.datetime.now() + datetime.timedelta(minutes=15)
+		if self.__timedeltaMinutes==None:
+			return datetime.datetime.now() + datetime.timedelta(days=30)
+		return datetime.datetime.now() + datetime.timedelta(self.__timedeltaMinutes)
 
 	def hasKey(self, a):
 		self.__updateExpirationTime()
