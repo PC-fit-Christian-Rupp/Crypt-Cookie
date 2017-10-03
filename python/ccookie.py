@@ -12,9 +12,9 @@ from random import SystemRandom
 
 class ccookie:
 
-	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, key = None, IV = None):
-		self.__key = key
-		self.__IV = IV
+	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None):
+		self.__key = AESKey
+		self.__IV = AESInitialVector
 		self.__validateKey()
 		self.__validateVector()
 		self.__updateExpiration = updateExpiration
@@ -171,6 +171,6 @@ class ccookie:
 			raise Exception("invalid key")
 
 	def __validateVector(self):
-		if (self.__IV != None) and (len(self.__IV.encode('utf-8')) != 16):
+		if (self.__IV != None) and (len(self.__IV) != 16):
 			raise Exception("invalid vector")
 		
