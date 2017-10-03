@@ -13,6 +13,8 @@ from random import SystemRandom
 class ccookie:
 
 	def __init__(self, updateExpiration = False, timedeltaMinutes = 15):
+		self.__key =
+		self.__IV =
 		self.__updateExpiration = updateExpiration
 		self.__timedeltaMinutes = timedeltaMinutes
 		self.getKey()
@@ -39,7 +41,7 @@ class ccookie:
 
 	def __expiration(self):
 		if self.__timedeltaMinutes==None:
-			return datetime.datetime.now() + datetime.timedelta(days=30)
+			return datetime.datetime.now() + datetime.timedelta(days=90)
 		return datetime.datetime.now() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
 	def hasKey(self, a):
