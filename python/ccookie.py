@@ -12,9 +12,10 @@ from random import SystemRandom
 
 class ccookie:
 
-	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None):
+	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexeSessionID = False):
 		self.__key = AESKey
 		self.__IV = AESInitialVector
+		self.__complexeSessionID = complexeSessionID
 		self.__validateKey()
 		self.__validateVector()
 		self.__updateExpiration = updateExpiration
@@ -34,6 +35,15 @@ class ccookie:
 		self.__cookie["session"]["path"] = '/'
 		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
+
+	def __generateSessionID(self):
+		if self.__complexeSessionID:
+			pass
+		else:
+			self.__cookie["session"] = random.randint(0,100000000000000000)
+
+	def getSessionID(self):
+		return self.__cookie["session"].value
 
 	def __toInt(self, a):
 		return int.from_bytes(a, byteorder='big')
