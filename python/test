@@ -1,0 +1,4 @@
+#!/bin/bash
+python3 simpleSessionIDTest.py
+python3 complexSessionIDTest.py
+python3 saltedSessionIDTest.py

@@ -9,14 +9,15 @@ from http import cookies
 import cgi
 import sys
 from random import SystemRandom
+from hashlib import sha512
 
 class ccookie:
 
-	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexeSessionID = False, saltPrefix = None):
+	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexSessionID = False, salt = None):
 		self.__key = AESKey
 		self.__IV = AESInitialVector
-		self.__complexeSessionID = complexeSessionID
-		self.__saltPrefix = saltPrefix
+		self.__complexSessionID = complexSessionID
+		self.__salt = salt
 		self.__validateKey()
 		self.__validateVector()
 		self.__updateExpiration = updateExpiration
@@ -31,17 +32,18 @@ class ccookie:
 
 	def __newCookie(self):
 		self.__cookie = cookies.SimpleCookie()
-		self.__cookie["session"]= random.randint(0, 100000000000000000)
+		self.__generateSessionID()
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
 		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
 
 	def __generateSessionID(self):
-		if self.__saltPrefix != None:
-			self.__salt = self.__saltPrefix
-		if self.__complexeSessionID:
-			pass
+		if self.__complexSessionID:
+			if self.__salt is None:
+				self.__cookie["session"] = sha512(str(time.time()).encode('utf-8')).hexdigest() + str(random.randint(0, 100000000000000000))
+			else:
+				self.__cookie["session"] = sha512(str(str(time.time()) + self.__salt).encode('utf-8')).hexdigest() + str(random.randint(0, 100000000000000000))
 		else:
 			self.__cookie["session"] = random.randint(0,100000000000000000)
 

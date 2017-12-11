@@ -12,13 +12,15 @@ import string
 
 os.environ['SERVER_NAME']='Test Server Name'
 os.environ['REMOTE_ADDR']='255.255.255.255'
-print('\nSet enviroment variables!\n')
+print('--------------------------------------------------------------------------------')
+print('Test with salted Session ID\n')
+print('Set enviroment variables!\n')
 print('Server name set to "'+ os.environ['SERVER_NAME']+'" for the test routine!')
 print('Remote address set to "' +os.environ['REMOTE_ADDR'] +'" for the test routine!\n')
 print('Set enviroment variables!\t\t\t\t\t\tFINISHED')
 print('-------------------------------------------------------------------------------')
 print('Generate test crypt cookie!\n')
-oCookie = ccookie.ccookie()
+oCookie = ccookie.ccookie(complexSessionID = True, salt = 'zero.conf 1970')
 print('Generate test crypt cookei!\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 print('Test session data!\n')
@@ -119,4 +121,4 @@ if oCookie.getInitialVector() == oInitialVector:
 else:
 	print('Individual vector not correct set!\t\t\t\t\tFAILED')
 print('Test with indiviual keys!\t\t\t\t\t\tFINISHED')
-print('All tests FINISHED')
+print('Salted session ID tests FINISHED')
