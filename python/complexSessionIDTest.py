@@ -121,4 +121,12 @@ if oCookie.getInitialVector() == oInitialVector:
 else:
 	print('Individual vector not correct set!\t\t\t\t\tFAILED')
 print('Test with indiviual keys!\t\t\t\t\t\tFINISHED')
+print('--------------------------------------------------------------------------------')
+print('Test for Cookie Output.')
+strCookieOutput = oCookie.getCookie().output()
+print('Cookie output: ' + strCookieOutput)
+if strCookieOutput is None:
+	print('No Cookie output available!\t\t\t\t\t\tFAILED')
+else:
+	print('Cookie output available!\t\t\t\t\t\tSUCCESS')
 print('Complex session ID tests FINISHED')
