@@ -26,7 +26,6 @@ class ccookie:
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
 			self.__cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
-			self.isValid()
 		else:
 			self.__newCookie()
 
@@ -139,7 +138,6 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		self.__updateExpirationTime()
 		ip = int(self.__cookie[str(self.__toInt(self.__encrypt('IP')))].value)
 		if self.__decrypt(self.__toByte(ip)) == os.environ['REMOTE_ADDR']:
 			return 1
