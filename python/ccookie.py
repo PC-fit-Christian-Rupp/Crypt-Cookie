@@ -47,6 +47,9 @@ class ccookie:
 		else:
 			self.__cookie["session"] = random.randint(0,100000000000000000)
 
+	def getCookie(self):
+		return self.__cookie
+
 	def getSessionID(self):
 		return self.__cookie["session"].value
 
