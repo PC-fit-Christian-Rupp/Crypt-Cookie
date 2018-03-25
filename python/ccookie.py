@@ -40,14 +40,17 @@ class ccookie:
 	def __generateSessionID(self):
 		if self.__complexSessionID:
 			if self.__salt is None:
-				self.__cookie["session"] = sha512(str(time.time()).encode('utf-8')).hexdigest() + str(random.randint(0, 100000000000000000))
+				self.__cookie["session"] = sha512(str(time.time()).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
 			else:
-				self.__cookie["session"] = sha512(str(str(time.time()) + self.__salt).encode('utf-8')).hexdigest() + str(random.randint(0, 100000000000000000))
+				self.__cookie["session"] = sha512(str(str(time.time()) + self.__salt).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
 		else:
 			self.__cookie["session"] = random.randint(0,100000000000000000)
 
 	def getCookie(self):
 		return self.__cookie
+
+	def getOutput(self):
+		return self.__cookie.output()
 
 	def getSessionID(self):
 		return self.__cookie["session"].value
@@ -82,7 +85,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('USER')))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf-16'))
+				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf8'))
 
 	def getPassword(self):
 		self.__updateExpirationTime()
@@ -90,7 +93,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD').decode('utf-16'))
+				self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD').decode('utf8'))
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
@@ -107,7 +110,7 @@ class ccookie:
 			try:
 				del self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]
 			except (KeyError):
-				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf-16'))
+				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf8'))
 
 	def getValue(self, keyword):
 		self.__updateExpirationTime()
@@ -115,7 +118,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getValue', self.__encrypt(keyword).decode('utf-16'))
+				self.__keyErrorHandler('getValue', self.__encrypt(keyword).decode('utf8'))
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
