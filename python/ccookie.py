@@ -147,6 +147,14 @@ class ccookie:
 		else:
 			return 0
 
+	def isExpired(self):
+		iExpireTime = int(datetime.datetime.strptime(self.__cookie["session"]["expires"], "%a, %d-%b-%Y %H:%M:%S PST").strftime("%Y%m%d%H%M"))
+		iNow = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
+		if iNow > iExpireTime:
+			return 1
+		else:
+			return 0
+
 	def getKey(self):
 		if self.__key != None:
 			return self.__key

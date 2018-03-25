@@ -31,12 +31,17 @@ print('Expires:\t' + oCookie._ccookie__cookie['session']['expires'])
 print('Encrypted IP:\t'+ oCookie._ccookie__cookie[str(oCookie._ccookie__toInt(oCookie._ccookie__encrypt('IP')))].value+'\n')
 print('Test session data!\t\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
-print('Validation test!\n')
+print('Validation and expiration test!\n')
 if oCookie.isValid():
 	print('Validation test!\t\t\t\t\t\t\tFINISHED')
 else:
 	print('Validation test!\t\t\t\t\t\t\tFAILED')
 	sys.exit(0)
+if oCookie.isExpired():
+	print('Expiration test!\t\t\t\t\t\t\tFAILED')
+	sys.exit(0)
+else:
+	print('Expiration test!\t\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 usr='Mad Max'
 pwd='Donnerkupel'
@@ -47,10 +52,12 @@ print('\tPassword:\t'+pwd+'\n')
 oCookie.login(usr, pwd)
 if not(oCookie.getUser()==usr):
 	print(oCookie.getUser()+' is not the correct user name!\t\t\t\t\tFAILED')
+	sys.exit(0)
 else:
 	print(oCookie.getUser()+' is the correct user name!\t\t\t\t\tSUCCESS')
 if not(oCookie.getPassword()==pwd):
 	print(oCookie.getPassword()+' is not the correct password!\t\t\t\t\tFAILED')
+	sys.exit(0)
 else:
 	print(oCookie.getPassword()+' is the correct password!\t\t\t\t\tSUCCESS')
 print('Login data test!\t\t\t\t\t\t\tFINISHED')
@@ -72,6 +79,7 @@ if oCookie.getValue(key)==value:
 	print(oCookie.getValue(key)+' is the correct value!\t\t\t\t\t\tSUCCESS')
 else:
 	print(oCookie.getValue(key)+' is not the correct  value!\t\t\t\t\t\tFAILED')
+	sys.exit(0)
 oCookie.deleteValue(key)
 print('Value deleted!\t\t\t\t\t\t\t\tSUCCESS')
 print('Check key value functions!\t\t\t\t\t\tFINISHED')
@@ -85,6 +93,7 @@ if strExpiration != oCookie._ccookie__cookie['session']['expires']:
 	print('Update expiration is working!\t\t\t\t\t\tSUCCESS')
 else:
 	print('Update expiration is not working!\t\t\t\t\tFAILED')
+	sys.exit(0)
 print('Test of update expiration!\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 print('Test for different expiration times!\n')
@@ -94,18 +103,21 @@ if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Default setting with expiration of 15 minutes is working!\t\tSUCCESS')
 else:
 	print('Default setting with expiration of 15 minutes is not working!\t\tFAILED')
+	sys.exit(0)
 oCookie = ccookie.ccookie(timedeltaMinutes = None)
 strExpectedExpiration = (datetime.datetime.now() + datetime.timedelta(days=90)).strftime("%a, %d-%b-%Y %H:%M:%S PST")
 if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Setting with expiration of 3 month is working!\t\t\t\tSUCCESS')
 else:
 	print('Setting with expiration of 3 month is not working!\t\t\tFAILED')
+	sys.exit(0)
 oCookie = ccookie.ccookie(timedeltaMinutes = 60)
 strExpectedExpiration = (datetime.datetime.now() + datetime.timedelta(minutes=60)).strftime("%a, %d-%b-%Y %H:%M:%S PST")
 if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Setting with expiration of 60 minutes is working!\t\t\tSUCCESS')
 else:
 	print('Setting with expiration of 60 minutes is not working!\t\t\tFAILED')
+	sys.exit(0)
 print('Test for different expiration times!\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 print('Test with individual keys!\n')
@@ -116,10 +128,12 @@ if oCookie.getKey() == oKey:
 	print('Individual key correct set!\t\t\t\t\t\tSUCCESS')
 else:
 	print('Individual key not correct set!\t\t\t\t\t\tFAILED')
+	sys.exit(0)
 if oCookie.getInitialVector() == oInitialVector:
 	print('Individual vector correct set!\t\t\t\t\t\tSUCCESS')
 else:
 	print('Individual vector not correct set!\t\t\t\t\tFAILED')
+	sys.exit(0)
 print('Test with indiviual keys!\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 print('Test for Cookie Output.')
@@ -127,6 +141,7 @@ strCookieOutput = oCookie.getCookie().output()
 print('Cookie output: ' + strCookieOutput)
 if strCookieOutput is None:
 	print('No Cookie output available!\t\t\t\t\t\tFAILED')
+	sys.exit(0)
 else:
 	print('Cookie output available!\t\t\t\t\t\tSUCCESS')
 print('Salted session ID tests FINISHED')
