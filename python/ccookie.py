@@ -13,6 +13,11 @@ from hashlib import sha512
 
 class ccookie:
 
+	__KEY_FILE_NAME = 'key.asc'
+	__INITIAL_VECTOR = 'initialVector.asc'
+	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S PST'
+	__TIMEFORMAT = '%Y%m%d%H%M'
+
 	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexSessionID = False, salt = None):
 		self.__key = AESKey
 		self.__IV = AESInitialVector
@@ -34,7 +39,7 @@ class ccookie:
 		self.__generateSessionID()
 		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
-		self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
+		self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
 
 	def __generateSessionID(self):
@@ -85,7 +90,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('USER')))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getUser', self.__encrypt('USER').decode('utf8'))
+				self.__keyErrorHandler('getUser', str(self.__toInt(self.__encrypt('USER'))))
 
 	def getPassword(self):
 		self.__updateExpirationTime()
@@ -93,7 +98,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getPassword', self.__encrypt('PASSWORD').decode('utf8'))
+				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
@@ -110,7 +115,7 @@ class ccookie:
 			try:
 				del self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]
 			except (KeyError):
-				self.__keyErrorHandler('deleteValue', self.__encrypt(keyword).decode('utf8'))
+				self.__keyErrorHandler('deleteValue', str(self.__toInt(self.__encrypt(keyword))))
 
 	def getValue(self, keyword):
 		self.__updateExpirationTime()
@@ -118,7 +123,7 @@ class ccookie:
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getValue', self.__encrypt(keyword).decode('utf8'))
+				self.__keyErrorHandler('getValue', str(self.__toInt(self.__encrypt(keyword))))
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
@@ -148,8 +153,8 @@ class ccookie:
 			return 0
 
 	def isExpired(self):
-		iExpireTime = int(datetime.datetime.strptime(self.__cookie["session"]["expires"], "%a, %d-%b-%Y %H:%M:%S PST").strftime("%Y%m%d%H%M"))
-		iNow = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
+		iExpireTime = int(datetime.datetime.strptime(self.__cookie["session"]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT))
+		iNow = int(datetime.datetime.now().strftime(self.__TIMEFORMAT))
 		if iNow > iExpireTime:
 			return 1
 		else:
@@ -158,12 +163,12 @@ class ccookie:
 	def getKey(self):
 		if self.__key != None:
 			return self.__key
-		if os.path.isfile('key.asc'):
-			f = open('key.asc', 'r')
+		if os.path.isfile(self.__KEY_FILE_NAME):
+			f = open(self.__KEY_FILE_NAME, 'r')
 			self.__key = f.read()
 			f.close()
 		else:
-			f = open('key.asc', 'w')
+			f = open(self.__KEY_FILE_NAME, 'w')
 			self.__key = self.__generateKey()
 			f.write(self.__key)
 			f.close()
@@ -172,14 +177,16 @@ class ccookie:
 	def getInitialVector(self):
 		if self.__IV != None:
 			return self.__IV
-		if os.path.isfile('initalVector.asc'):
-			f = open('initialVector.asc', 'r')
-			self.__IV = f.read()
+		if os.path.isfile(self.__INITIAL_VECTOR):
+			f = open(self.__INITIAL_VECTOR, 'r')
+			iFileContent = int(f.read())
+			self.__IV = self.__toByte(iFileContent)
 			f.close()
 		else:
-			f = open('initialVector.asc', 'w')
+			f = open(self.__INITIAL_VECTOR, 'w')
 			self.__IV = self.__generateInitialVector()
-			f.write(str(self.__IV))
+			iVector = self.__toInt(self.__IV)
+			f.write(str(iVector))
 			f.close()
 		return self.__IV
 
@@ -191,7 +198,7 @@ class ccookie:
 
 	def __updateExpirationTime(self):
 		if self.__updateExpiration:
-			self.__cookie["session"]["expires"] = self.__expiration().strftime("%a, %d-%b-%Y %H:%M:%S PST")
+			self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 
 	def __validateKey(self):
 		if (self.__key != None) and (len(self.__key) != 32):
