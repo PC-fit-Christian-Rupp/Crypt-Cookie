@@ -16,7 +16,7 @@ class ccookie:
 	__KEY_FILE_NAME = 'key.asc'
 	__INITIAL_VECTOR = 'initialVector.asc'
 	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S UTC'
-	__TIMEFORMAT = '%Y%m%d%H%M'
+	__TIMEFORMAT = '%Y%m%d%H%M%S'
 
 	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexSessionID = False, salt = None):
 		self.__key = AESKey
@@ -50,6 +50,10 @@ class ccookie:
 				self.__cookie["session"] = sha512(str(str(time.time()) + self.__salt).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
 		else:
 			self.__cookie["session"] = random.randint(0,100000000000000000)
+
+	def getTimeOut(self):
+		iTimeOut = time.strptime(self.__cookie["session"]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT)
+		return iTimeOut
 
 	def getCookie(self):
 		return self.__cookie
