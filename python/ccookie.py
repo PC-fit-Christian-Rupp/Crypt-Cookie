@@ -15,7 +15,7 @@ class ccookie:
 
 	__KEY_FILE_NAME = 'key.asc'
 	__INITIAL_VECTOR = 'initialVector.asc'
-	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S PST'
+	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S UTC'
 	__TIMEFORMAT = '%Y%m%d%H%M'
 
 	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexSessionID = False, salt = None):
@@ -68,8 +68,8 @@ class ccookie:
 
 	def __expiration(self):
 		if self.__timedeltaMinutes==None:
-			return datetime.datetime.now() + datetime.timedelta(days=90)
-		return datetime.datetime.now() + datetime.timedelta(minutes=self.__timedeltaMinutes)
+			return datetime.datetime.utcnow() + datetime.timedelta(days=90)
+		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
 	def hasKey(self, a):
 		self.__updateExpirationTime()
@@ -154,8 +154,8 @@ class ccookie:
 
 	def isExpired(self):
 		iExpireTime = int(datetime.datetime.strptime(self.__cookie["session"]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT))
-		iNow = int(datetime.datetime.now().strftime(self.__TIMEFORMAT))
-		if iNow > iExpireTime:
+		iutcnow = int(datetime.datetime.utcnow().strftime(self.__TIMEFORMAT))
+		if iutcnow > iExpireTime:
 			return 1
 		else:
 			return 0
