@@ -37,7 +37,7 @@ class ccookie:
 	def __newCookie(self):
 		self.__cookie = cookies.SimpleCookie()
 		self.__generateSessionID()
-		self.__cookie["session"]["domain"] = '.'+ os.environ["SERVER_NAME"]
+		self.__cookie["session"]["domain"] = os.environ["SERVER_NAME"]
 		self.__cookie["session"]["path"] = '/'
 		self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
