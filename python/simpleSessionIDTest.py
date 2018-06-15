@@ -98,21 +98,21 @@ print('Test of update expiration!\t\t\t\t\t\tFINISHED')
 print('--------------------------------------------------------------------------------')
 print('Test for different expiration times!\n')
 oCookie = ccookie.ccookie()
-strExpectedExpiration = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%a, %d-%b-%Y %H:%M:%S PST")
+strExpectedExpiration = (datetime.datetime.utcnow() + datetime.timedelta(minutes=15)).strftime("%a, %d-%b-%Y %H:%M:%S UTC")
 if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Default setting with expiration of 15 minutes is working!\t\tSUCCESS')
 else:
 	print('Default setting with expiration of 15 minutes is not working!\t\tFAILED')
 	sys.exit(0)
 oCookie = ccookie.ccookie(timedeltaMinutes = None)
-strExpectedExpiration = (datetime.datetime.now() + datetime.timedelta(days=90)).strftime("%a, %d-%b-%Y %H:%M:%S PST")
+strExpectedExpiration = (datetime.datetime.utcnow() + datetime.timedelta(days=90)).strftime("%a, %d-%b-%Y %H:%M:%S UTC")
 if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Setting with expiration of 3 month is working!\t\t\t\tSUCCESS')
 else:
 	print('Setting with expiration of 3 month is not working!\t\t\tFAILED')
 	sys.exit(0)
 oCookie = ccookie.ccookie(timedeltaMinutes = 60)
-strExpectedExpiration = (datetime.datetime.now() + datetime.timedelta(minutes=60)).strftime("%a, %d-%b-%Y %H:%M:%S PST")
+strExpectedExpiration = (datetime.datetime.utcnow() + datetime.timedelta(minutes=60)).strftime("%a, %d-%b-%Y %H:%M:%S UTC")
 if strExpectedExpiration == oCookie._ccookie__cookie['session']['expires']:
 	print('Setting with expiration of 60 minutes is working!\t\t\tSUCCESS')
 else:

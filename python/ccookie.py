@@ -182,15 +182,13 @@ class ccookie:
 		if self.__IV != None:
 			return self.__IV
 		if os.path.isfile(self.__INITIAL_VECTOR):
-			f = open(self.__INITIAL_VECTOR, 'r')
-			iFileContent = int(f.read())
-			self.__IV = self.__toByte(iFileContent)
+			f = open(self.__INITIAL_VECTOR, 'rb')
+			self.__IV = f.read()
 			f.close()
 		else:
-			f = open(self.__INITIAL_VECTOR, 'w')
+			f = open(self.__INITIAL_VECTOR, 'wb')
 			self.__IV = self.__generateInitialVector()
-			iVector = self.__toInt(self.__IV)
-			f.write(str(iVector))
+			f.write(self.__IV)
 			f.close()
 		return self.__IV
 
