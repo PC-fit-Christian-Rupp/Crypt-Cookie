@@ -76,20 +76,20 @@ class ccookie:
 		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
 	def hasKey(self, a):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
 			return 1
 		else:
 			return 0
 
 	def login(self, user, password):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))
 			self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))] = self.__toInt(self.__encrypt(password))
 
 	def getUser(self):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('USER')))].value)))
@@ -97,7 +97,7 @@ class ccookie:
 				self.__keyErrorHandler('getUser', str(self.__toInt(self.__encrypt('USER'))))
 
 	def getPassword(self):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
@@ -108,13 +108,18 @@ class ccookie:
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
 		sys.exit(msg)
 
-	def addValue(self, keyword, value):
-		self.__updateExpirationTime()
+	def addValue(self, keyword, value, bSetToRootPath = False, strExpiration = ""):
+		self.__updateSessionExpirationTime()
+		strEncryptedKey = str(self.__toInt(self.__encrypt(keyword)))
 		if self.isValid():
-			self.__cookie[str(self.__toInt(self.__encrypt(keyword)))] = self.__toInt(self.__encrypt(value))
+			self.__cookie[strEncryptedKey] = self.__toInt(self.__encrypt(value))
+			if bSetToRootPath:
+				self.__cookie[strEncryptedKey]["path"] = "/"
+			if strExpiration <> "":
+				self.__cookie[strEncryptedKey]["expires"] = strExpiration
 
 	def deleteValue(self, keyword):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
 				del self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]
@@ -122,7 +127,7 @@ class ccookie:
 				self.__keyErrorHandler('deleteValue', str(self.__toInt(self.__encrypt(keyword))))
 
 	def getValue(self, keyword):
-		self.__updateExpirationTime()
+		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
@@ -198,7 +203,7 @@ class ccookie:
 	def __generateKey(self):
 		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
 
-	def __updateExpirationTime(self):
+	def __updateSessionExpirationTime(self):
 		if self.__updateExpiration:
 			self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 
