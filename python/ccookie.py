@@ -115,7 +115,7 @@ class ccookie:
 			self.__cookie[strEncryptedKey] = self.__toInt(self.__encrypt(value))
 			if bSetToRootPath:
 				self.__cookie[strEncryptedKey]["path"] = "/"
-			if strExpiration <> "":
+			if strExpiration != "":
 				self.__cookie[strEncryptedKey]["expires"] = strExpiration
 
 	def deleteValue(self, keyword):
