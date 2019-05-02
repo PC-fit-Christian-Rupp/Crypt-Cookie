@@ -17,6 +17,10 @@ class ccookie:
 	__INITIAL_VECTOR = 'initialVector.asc'
 	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S UTC'
 	__TIMEFORMAT = '%Y%m%d%H%M%S'
+	__SESSION = 'session'
+	__USER = 'USER'
+	__PASSWORD = 'PASSWORD'
+	__IP = 'IP'
 
 	def __init__(self, updateExpiration = False, timedeltaMinutes = 15, AESKey = None, AESInitialVector = None, complexSessionID = False, salt = None):
 		self.__key = AESKey
@@ -36,23 +40,65 @@ class ccookie:
 
 	def __newCookie(self):
 		self.__cookie = cookies.SimpleCookie()
+
+	def createSession(self, strUser = "", strPassword = ""):
 		self.__generateSessionID()
-		self.__cookie["session"]["domain"] = os.environ["SERVER_NAME"]
-		self.__cookie["session"]["path"] = '/'
-		self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
-		self.__cookie[str(self.__toInt(self.__encrypt('IP')))] = self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"]))
+		self.__cookie[self.__SESSION]["domain"] = os.environ["SERVER_NAME"]
+		self.__cookie[self.__SESSION]["path"] = '/'
+		self.__cookie[self.__SESSION]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+		strEncryptedIPKey = str(self.__toInt(self.__encrypt('IP')))
+		self.__cookie[strEncryptedIPKey] = str(self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"])))
+		self.__cookie[strEncryptedIPKey]["path"] = '/'
+		self.__cookie[strEncryptedIPKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+		strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
+		self.__cookie[strEncryptedUserKey] = str(self.__toInt(self.__encrypt(strUser)))
+		self.__cookie[strEncryptedUserKey]["path"] = '/'
+		self.__cookie[strEncryptedUserKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt('PASSWORD')))
+		self.__cookie[strEncryptedPasswordKey] = str(self.__toInt(self.__encrypt(strPassword)))
+		self.__cookie[strEncryptedPasswordKey]["path"] = '/'
+		self.__cookie[strEncryptedPasswordKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+
+	def login(self, user, password):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			self.__cookie[str(self.__toInt(self.__encrypt(self.__USER)))] = self.__toInt(self.__encrypt(user))
+			self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))] = self.__toInt(self.__encrypt(password))
+
+	def getUser(self):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			try:
+				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(self.__USER)))].value)))
+			except (KeyError):
+				self.__keyErrorHandler('getUser', str(self.__toInt(self.__encrypt(self.__USER))))
+
+	def destroySession(self):
+		self.__cookie[self.__SESSION]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+		strEncryptedUserKey = str(self.__toInt(self.__encrypt('IP')))
+		self.__cookie[strEncryptedUserKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__USER)))
+		self.__cookie[strEncryptedPasswordKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__PASSWORD)))
+		self.__cookie[strEncryptedPasswordKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+
+	def getSessionExpiration(self):
+		return self.__cookie[self.__SESSION]["expires"]
+
+	def hasSession(self):
+		return (self.__SESSION in self.__cookie)
 
 	def __generateSessionID(self):
 		if self.__complexSessionID:
 			if self.__salt is None:
-				self.__cookie["session"] = sha512(str(time.time()).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
+				self.__cookie[self.__SESSION] = sha512(str(time.time()).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
 			else:
-				self.__cookie["session"] = sha512(str(str(time.time()) + self.__salt).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
+				self.__cookie[self.__SESSION] = sha512(str(str(time.time()) + self.__salt).encode('utf8')).hexdigest() + str(random.randint(0, 100000000000000000))
 		else:
-			self.__cookie["session"] = random.randint(0,100000000000000000)
+			self.__cookie[self.__SESSION] = random.randint(0,100000000000000000)
 
 	def getTimeOut(self):
-		iTimeOut = time.strptime(self.__cookie["session"]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT)
+		iTimeOut = time.strptime(self.__cookie[self.__SESSION]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT)
 		return iTimeOut
 
 	def getCookie(self):
@@ -62,7 +108,7 @@ class ccookie:
 		return self.__cookie.output()
 
 	def getSessionID(self):
-		return self.__cookie["session"].value
+		return self.__cookie[self.__SESSION].value
 
 	def __toInt(self, a):
 		return int.from_bytes(a, byteorder='big')
@@ -112,7 +158,7 @@ class ccookie:
 		self.__updateSessionExpirationTime()
 		strEncryptedKey = str(self.__toInt(self.__encrypt(keyword)))
 		if self.isValid():
-			self.__cookie[strEncryptedKey] = self.__toInt(self.__encrypt(value))
+			self.__cookie[strEncryptedKey] = str(self.__toInt(self.__encrypt(value)))
 			if bSetToRootPath:
 				self.__cookie[strEncryptedKey]["path"] = "/"
 			if strExpiration != "":
@@ -155,14 +201,16 @@ class ccookie:
 		return strin
 
 	def isValid(self):
-		ip = int(self.__cookie[str(self.__toInt(self.__encrypt('IP')))].value)
+		if self.hasSession:
+			return 1
+		ip = int(self.__cookie[str(self.__toInt(self.__encrypt(self.__IP)))].value)
 		if self.__decrypt(self.__toByte(ip)) == os.environ['REMOTE_ADDR']:
 			return 1
 		else:
 			return 0
 
 	def isExpired(self):
-		iExpireTime = int(datetime.datetime.strptime(self.__cookie["session"]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT))
+		iExpireTime = int(datetime.datetime.strptime(self.__cookie[self.__SESSION]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT))
 		iutcnow = int(datetime.datetime.utcnow().strftime(self.__TIMEFORMAT))
 		if iutcnow > iExpireTime:
 			return 1
@@ -205,7 +253,13 @@ class ccookie:
 
 	def __updateSessionExpirationTime(self):
 		if self.__updateExpiration:
-			self.__cookie["session"]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+			self.__cookie[self.__SESSION]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+			strEncryptedIPKey = str(self.__toInt(self.__encrypt(self.__IP)))
+			self.__cookie[strEncryptedIPKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+			strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
+			self.__cookie[strEncryptedUserKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+			strEncryptedPasswordKey = str(self.__toInt(self.__encrypt('PASSWORD')))
+			self.__cookie[strEncryptedPasswordKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
 
 	def __validateKey(self):
 		if (self.__key != None) and (len(self.__key) != 32):
