@@ -17,6 +17,7 @@ class ccookie:
 	__INITIAL_VECTOR = 'initialVector.asc'
 	__COOKIE_TIMEFORMAT = '%a, %d-%b-%Y %H:%M:%S UTC'
 	__TIMEFORMAT = '%Y%m%d%H%M%S'
+	__TIMEMIN = 'Thu, 01-Jan-1970 00:00:00 UTC'
 	__SESSION = 'session'
 	__USER = 'USER'
 	__PASSWORD = 'PASSWORD'
@@ -35,6 +36,7 @@ class ccookie:
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
 			self.__cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
+			self.__updateSessionExpirationTime()
 		else:
 			self.__newCookie()
 
@@ -74,13 +76,13 @@ class ccookie:
 				self.__keyErrorHandler('getUser', str(self.__toInt(self.__encrypt(self.__USER))))
 
 	def destroySession(self):
-		self.__cookie[self.__SESSION]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
-		strEncryptedUserKey = str(self.__toInt(self.__encrypt('IP')))
-		self.__cookie[strEncryptedUserKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
-		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__USER)))
-		self.__cookie[strEncryptedPasswordKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+		self.__cookie[self.__SESSION]["expires"] = self.__TIMEMIN
+		strEncryptedIPKey = str(self.__toInt(self.__encrypt('IP')))
+		self.__cookie[strEncryptedIPKey]["expires"] = self.__TIMEMIN
+		strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
+		self.__cookie[strEncryptedUserKey]["expires"] = self.__TIMEMIN
 		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__PASSWORD)))
-		self.__cookie[strEncryptedPasswordKey]["expires"] = 'Thu, 01-Jan-1970 00:00:00 PST'
+		self.__cookie[strEncryptedPasswordKey]["expires"] = self.__TIMEMIN
 
 	def getSessionExpiration(self):
 		return self.__cookie[self.__SESSION]["expires"]
