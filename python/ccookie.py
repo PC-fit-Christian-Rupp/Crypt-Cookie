@@ -51,22 +51,23 @@ class ccookie:
 
 	#region Session
 	def createSession(self, strUser = "", strPassword = ""):
+		strExpiration = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 		self.__generateSessionID()
 		self.__cookie[self.__SESSION]["domain"] = os.environ["SERVER_NAME"]
 		self.__cookie[self.__SESSION]["path"] = '/'
-		self.__cookie[self.__SESSION]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+		self.__cookie[self.__SESSION]["expires"] = strExpiration
 		strEncryptedIPKey = str(self.__toInt(self.__encrypt('IP')))
 		self.__cookie[strEncryptedIPKey] = str(self.__toInt(self.__encrypt(os.environ["REMOTE_ADDR"])))
 		self.__cookie[strEncryptedIPKey]["path"] = '/'
-		self.__cookie[strEncryptedIPKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+		self.__cookie[strEncryptedIPKey]["expires"] = strExpiration
 		strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
 		self.__cookie[strEncryptedUserKey] = str(self.__toInt(self.__encrypt(strUser)))
 		self.__cookie[strEncryptedUserKey]["path"] = '/'
-		self.__cookie[strEncryptedUserKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+		self.__cookie[strEncryptedUserKey]["expires"] = strExpiration
 		strEncryptedPasswordKey = str(self.__toInt(self.__encrypt('PASSWORD')))
 		self.__cookie[strEncryptedPasswordKey] = str(self.__toInt(self.__encrypt(strPassword)))
 		self.__cookie[strEncryptedPasswordKey]["path"] = '/'
-		self.__cookie[strEncryptedPasswordKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+		self.__cookie[strEncryptedPasswordKey]["expires"] = strExpiration
 
 	def login(self, user, password):
 		self.__updateSessionExpirationTime()
@@ -113,7 +114,7 @@ class ccookie:
 	def getSessionID(self):
 		return self.__cookie[self.__SESSION].value
 
-		def login(self, user, password):
+	def login(self, user, password):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))
@@ -158,16 +159,31 @@ class ccookie:
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
 		sys.exit(msg)
 
-	def addValue(self, keyword, value, bSetToRootPath = False, strExpiration = ""):
+	def addEncryptedValue(self, strKeyWord, strValue, bSetToRootPath = False, strExpiration = ''):
 		self.__updateSessionExpirationTime()
-		strEncryptedKey = str(self.__toInt(self.__encrypt(keyword)))
-		strEncryptedValue = str(self.__toInt(self.__encrypt(value)))
+		strEncryptedKey = str(self.__toInt(self.__encrypt(strKeyWord)))
+		strEncryptedValue = str(self.__toInt(self.__encrypt(strValue)))
 		if self.isValid():
 			self.__cookie[strEncryptedKey] = strEncryptedValue
 			if bSetToRootPath:
 				self.__cookie[strEncryptedKey]["path"] = "/"
 			if strExpiration != "":
 				self.__cookie[strEncryptedKey]["expires"] = strExpiration
+	
+	def addClearValue(self, strKeyWord, strValue, bSetToRootPath = False, strExpiration = ''):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			self.__cookie[strKeyWord] = strValue
+			if bSetToRootPath:
+				self.__cookie[strKeyWord]["path"] = "/"
+			if strExpiration != "":
+				self.__cookie[strKeyWord]["expires"] = strExpiration
+
+	def addValue(self, keyword, value, bSetToRootPath = False, strExpiration = "", bEncrypted = True):
+		if bEncrypted:
+			self.addEncryptedValue(keyword, value, bSetToRootPath, strExpiration)
+		else:
+			self.addClearValue(strKeyWord, value, bSetToRootPath, strExpiration)
 
 	def deleteValue(self, keyword):
 		self.__updateSessionExpirationTime()
