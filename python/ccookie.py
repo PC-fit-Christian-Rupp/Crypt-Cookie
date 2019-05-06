@@ -161,8 +161,9 @@ class ccookie:
 	def addValue(self, keyword, value, bSetToRootPath = False, strExpiration = ""):
 		self.__updateSessionExpirationTime()
 		strEncryptedKey = str(self.__toInt(self.__encrypt(keyword)))
+		strEncryptedValue = str(self.__toInt(self.__encrypt(value)))
 		if self.isValid():
-			self.__cookie[strEncryptedKey] = str(self.__toInt(self.__encrypt(value)))
+			self.__cookie[strEncryptedKey] = strEncryptedValue
 			if bSetToRootPath:
 				self.__cookie[strEncryptedKey]["path"] = "/"
 			if strExpiration != "":
@@ -257,13 +258,14 @@ class ccookie:
 
 	def __updateSessionExpirationTime(self):
 		if self.__updateExpiration:
-			self.__cookie[self.__SESSION]["expires"] = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+			strNewExpirationTime = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+			self.__cookie[self.__SESSION]["expires"] = strNewExpirationTime
 			strEncryptedIPKey = str(self.__toInt(self.__encrypt(self.__IP)))
-			self.__cookie[strEncryptedIPKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+			self.__cookie[strEncryptedIPKey]["expires"] = strNewExpirationTime
 			strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
-			self.__cookie[strEncryptedUserKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
-			strEncryptedPasswordKey = str(self.__toInt(self.__encrypt('PASSWORD')))
-			self.__cookie[strEncryptedPasswordKey]["expires"] = self.__cookie[self.__SESSION]["expires"]
+			self.__cookie[strEncryptedUserKey]["expires"] = strNewExpirationTime
+			strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__PASSWORD)))
+			self.__cookie[strEncryptedPasswordKey]["expires"] = strNewExpirationTime
 
 	def __validateKey(self):
 		if (self.__key != None) and (len(self.__key) != 32):
