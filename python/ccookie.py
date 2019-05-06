@@ -43,6 +43,13 @@ class ccookie:
 	def __newCookie(self):
 		self.__cookie = cookies.SimpleCookie()
 
+	def getCookie(self):
+		return self.__cookie
+
+	def getOutput(self):
+		return self.__cookie.output()
+
+	#region Session
 	def createSession(self, strUser = "", strPassword = ""):
 		self.__generateSessionID()
 		self.__cookie[self.__SESSION]["domain"] = os.environ["SERVER_NAME"]
@@ -103,34 +110,10 @@ class ccookie:
 		iTimeOut = time.strptime(self.__cookie[self.__SESSION]["expires"], self.__COOKIE_TIMEFORMAT).strftime(self.__TIMEFORMAT)
 		return iTimeOut
 
-	def getCookie(self):
-		return self.__cookie
-
-	def getOutput(self):
-		return self.__cookie.output()
-
 	def getSessionID(self):
 		return self.__cookie[self.__SESSION].value
 
-	def __toInt(self, a):
-		return int.from_bytes(a, byteorder='big')
-
-	def __toByte(self, a):
-		return a.to_bytes((a.bit_length()+7)//8, byteorder='big')
-
-	def __expiration(self):
-		if self.__timedeltaMinutes==None:
-			return datetime.datetime.utcnow() + datetime.timedelta(days=90)
-		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
-
-	def hasKey(self, a):
-		self.__updateSessionExpirationTime()
-		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
-			return 1
-		else:
-			return 0
-
-	def login(self, user, password):
+		def login(self, user, password):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))
@@ -151,6 +134,25 @@ class ccookie:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
 			except (KeyError):
 				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
+	#endregion
+
+	def __toInt(self, a):
+		return int.from_bytes(a, byteorder='big')
+
+	def __toByte(self, a):
+		return a.to_bytes((a.bit_length()+7)//8, byteorder='big')
+
+	def __expiration(self):
+		if self.__timedeltaMinutes==None:
+			return datetime.datetime.utcnow() + datetime.timedelta(days=90)
+		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
+
+	def hasKey(self, a):
+		self.__updateSessionExpirationTime()
+		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
+			return 1
+		else:
+			return 0
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
