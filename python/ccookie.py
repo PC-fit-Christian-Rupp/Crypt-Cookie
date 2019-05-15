@@ -135,6 +135,17 @@ class ccookie:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
 			except (KeyError):
 				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
+
+	def __updateSessionExpirationTime(self):
+		if self.__updateExpiration:
+			strNewExpirationTime = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
+			self.__cookie[self.__SESSION]["expires"] = strNewExpirationTime
+			strEncryptedIPKey = str(self.__toInt(self.__encrypt(self.__IP)))
+			self.__cookie[strEncryptedIPKey]["expires"] = strNewExpirationTime
+			strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
+			self.__cookie[strEncryptedUserKey]["expires"] = strNewExpirationTime
+			strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__PASSWORD)))
+			self.__cookie[strEncryptedPasswordKey]["expires"] = strNewExpirationTime
 	#endregion
 
 	def __toInt(self, a):
@@ -204,8 +215,20 @@ class ccookie:
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
 
+	def __getEncryptedString(self, strInput):
+		bEncryptedInput = self.__encrypt(strInput)
+		iEncryptedInput = self.__toInt(bEncryptedInput)
+		strEncrypted = str(iEncryptedInput)
+		return strEncrypted
+
 	def __decrypt(self, strin):
 		return self.__unpad((AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).decrypt(strin)).decode('utf8'))
+
+	def __getDecryptedString(self, strInput):
+		iEncryptedInput = int(strInput)
+		bEncryptedInput = self.__toByte(iEncryptedInput)
+		strDecryptedInput = self.__decrypt(bEncryptedInput)
+		return strDecryptedInput
 
 	def __pad(self, strin):
 		i = 16 - (len(strin)%16)
@@ -271,17 +294,6 @@ class ccookie:
 
 	def __generateKey(self):
 		return ''.join(SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-
-	def __updateSessionExpirationTime(self):
-		if self.__updateExpiration:
-			strNewExpirationTime = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
-			self.__cookie[self.__SESSION]["expires"] = strNewExpirationTime
-			strEncryptedIPKey = str(self.__toInt(self.__encrypt(self.__IP)))
-			self.__cookie[strEncryptedIPKey]["expires"] = strNewExpirationTime
-			strEncryptedUserKey = str(self.__toInt(self.__encrypt(self.__USER)))
-			self.__cookie[strEncryptedUserKey]["expires"] = strNewExpirationTime
-			strEncryptedPasswordKey = str(self.__toInt(self.__encrypt(self.__PASSWORD)))
-			self.__cookie[strEncryptedPasswordKey]["expires"] = strNewExpirationTime
 
 	def __validateKey(self):
 		if (self.__key != None) and (len(self.__key) != 32):
