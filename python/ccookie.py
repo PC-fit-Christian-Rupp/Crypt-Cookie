@@ -88,6 +88,14 @@ class ccookie:
 			except (KeyError):
 				self.__keyErrorHandler('getUser', self.__getEncryptedString(self.__USER))
 
+	def getPassword(self):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			try:
+				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
+			except (KeyError):
+				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
+
 	def destroySession(self):
 		self.__cookie[self.__SESSION]["expires"] = self.__TIMEMIN
 		strEncryptedIPKey = str(self.__toInt(self.__encrypt('IP')))
@@ -125,27 +133,6 @@ class ccookie:
 	def getSessionID(self):
 		return self.__cookie[self.__SESSION].value
 
-	def login(self, user, password):
-		self.__updateSessionExpirationTime()
-		if self.isValid():
-			self.__cookie[str(self.__toInt(self.__encrypt('USER')))] = self.__toInt(self.__encrypt(user))
-			self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))] = self.__toInt(self.__encrypt(password))
-
-	def getUser(self):
-		self.__updateSessionExpirationTime()
-		if self.isValid():
-			try:
-				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('USER')))].value)))
-			except (KeyError):
-				self.__keyErrorHandler('getUser', str(self.__toInt(self.__encrypt('USER'))))
-
-	def getPassword(self):
-		self.__updateSessionExpirationTime()
-		if self.isValid():
-			try:
-				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt('PASSWORD')))].value)))
-			except (KeyError):
-				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
 
 	def __updateSessionExpirationTime(self):
 		if self.__updateExpiration:
@@ -214,7 +201,7 @@ class ccookie:
 			if strExpiration != "":
 				self.__cookie[strEncryptedKey]["expires"] = strExpiration
 	
-	def addClearValue(self, strKeyWord, strValue, bSetToRootPath = False, strExpiration = ''):
+	def addNonEncryptedValue(self, strKeyWord, strValue, bSetToRootPath = False, strExpiration = ''):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			self.__cookie[strKeyWord] = strValue
@@ -227,13 +214,13 @@ class ccookie:
 		if bEncrypted:
 			self.addEncryptedValue(keyword, value, bSetToRootPath, strExpiration)
 		else:
-			self.addClearValue(strKeyWord, value, bSetToRootPath, strExpiration)
+			self.addNonEncryptedValue(strKeyWord, value, bSetToRootPath, strExpiration)
 
 	def deleteValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
-				del self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]
+				self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]["expires"] = self.__TIMEMIN
 			except (KeyError):
 				self.__keyErrorHandler('deleteValue', str(self.__toInt(self.__encrypt(keyword))))
 
