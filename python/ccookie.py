@@ -198,35 +198,36 @@ class ccookie:
 			return datetime.datetime.utcnow() + datetime.timedelta(days=90)
 		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
-	def hasEncryptedKey(self, a):
+	def hasEncryptedKey(self, keyword):
 		self.__updateSessionExpirationTime()
-		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
+		strEncryptedKey = self.__getEncryptedString(keyword)
+		if strEncryptedKey in self.__cookie:
 			return 1
-		if self.hasKeyRecieved(self.__getEncryptedString(a)):
+		if self.hasKeyRecieved(strEncryptedKey):
 			return 1
 		else:
 			return 0
 
-	def hasNonEncryptedKey(self, a):
+	def hasNonEncryptedKey(self, keyword):
 		self.__updateSessionExpirationTime()
-		if a in self.__cookie:
+		if keyword in self.__cookie:
 			return 1
-		if self.hasKeyRecieved(a):
+		if self.hasKeyRecieved(keyword):
 			return 1
 		else:
 			return 0
 
-	def hasKeyRecieved(self, a):
+	def hasKeyRecieved(self, keyword):
 		if self.__CookiesReceived is not None:
-			if a in self.__CookiesReceived:
+			if keyword in self.__CookiesReceived:
 				return 1
 		return 0
 
-	def hasKey(self, a, bEncrypted = True):
+	def hasKey(self, keyword, bEncrypted = True):
 		if bEncrypted:
-			return self.hasEncryptedKey(a)
+			return self.hasEncryptedKey(keyword)
 		else:
-			return self.hasNonEncryptedKey(a)
+			return self.hasNonEncryptedKey(keyword)
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
@@ -261,18 +262,23 @@ class ccookie:
 	def deleteEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
-			if self.hasKeyRecieved(self.__getEncryptedString(keyword)):
-				self.__CookiesReceived[str(self.__toInt(self.__encrypt(keyword)))]["expires"] = self.__TIMEMIN
+			strEncryptedKey = self.__getEncryptedString(keyword)
+			if self.hasKeyRecieved(strEncryptedKey):
+				self.__cookie[strEncryptedKey] = ''
+				self.__cookie[strEncryptedKey]["expires"] = self.__TIMEMIN
+				return
 			try:
-				self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]["expires"] = self.__TIMEMIN
+				self.__cookie[strEncryptedKey]["expires"] = self.__TIMEMIN
 			except (KeyError):
-				self.__keyErrorHandler('deleteValue', str(self.__toInt(self.__encrypt(keyword))))
+				self.__keyErrorHandler('deleteValue', strEncryptedKey)
 
 	def deleteNonEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			if self.hasKeyRecieved(keyword):
-				self.__CookiesReceived[keyword]["expires"] = self.__TIMEMIN
+				self.__cookie[keyword] = ''
+				self.__cookie[keyword]["expires"] = self.__TIMEMIN
+				return
 			try:
 				self.__cookie[keyword]["expires"] = self.__TIMEMIN
 			except (KeyError):
@@ -287,12 +293,13 @@ class ccookie:
 	def getEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
+			strEncryptedKey = self.__getEncryptedString(keyword)
 			if self.hasKeyRecieved(self.__getEncryptedString(keyword)):
-				return self.__decrypt(self.__toByte(int(self.__CookiesReceived[str(self.__toInt(self.__encrypt(keyword)))].value)))
+				return self.__decrypt(self.__toByte(int(self.__CookiesReceived[strEncryptedKey].value)))
 			try:
-				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
+				return self.__decrypt(self.__toByte(int(self.__cookie[strEncryptedKey].value)))
 			except (KeyError):
-				self.__keyErrorHandler('getValue', str(self.__toInt(self.__encrypt(keyword))))
+				self.__keyErrorHandler('getValue', strEncryptedKey)
 
 	def getNonEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
