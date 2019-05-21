@@ -38,7 +38,7 @@ class ccookie:
 		if "HTTP_COOKIE" in os.environ:
 			self.__CookiesReceived = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
 		self.__cookie = cookies.SimpleCookie()
-		if self.hasSession():
+		if (self.__SESSION in self.__CookiesReceived):
 			self.__copySession()
 
 	def getCookie(self):
@@ -112,6 +112,8 @@ class ccookie:
 				self.__keyErrorHandler('getPassword', str(self.__toInt(self.__encrypt('PASSWORD'))))
 
 	def destroySession(self):
+		if not self.hasSession():
+			return
 		self.__cookie[self.__SESSION]["expires"] = self.__TIMEMIN
 		strEncryptedIPKey = str(self.__toInt(self.__encrypt('IP')))
 		self.__cookie[strEncryptedIPKey]["expires"] = self.__TIMEMIN
@@ -150,6 +152,8 @@ class ccookie:
 
 
 	def __updateSessionExpirationTime(self):
+		if not self.hasSession():
+			return
 		if self.__updateExpiration:
 			strNewExpirationTime = self.__expiration().strftime(self.__COOKIE_TIMEFORMAT)
 			self.__cookie[self.__SESSION]["expires"] = strNewExpirationTime
@@ -164,7 +168,7 @@ class ccookie:
 			self.__cookie[strExpiractionKey]["expires"] = strNewExpirationTime
 
 	def isValid(self):
-		if self.hasSession:
+		if self.hasSession():
 			return 1
 		ip = int(self.__cookie[str(self.__toInt(self.__encrypt(self.__IP)))].value)
 		if self.__decrypt(self.__toByte(ip)) == os.environ['REMOTE_ADDR']:
