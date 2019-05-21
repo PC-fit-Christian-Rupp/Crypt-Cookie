@@ -36,12 +36,10 @@ class ccookie:
 		self.getKey()
 		self.getInitialVector()
 		if "HTTP_COOKIE" in os.environ:
-			self.__cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
-		else:
-			self.__newCookie()
-
-	def __newCookie(self):
+			self.__CookiesReceived = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
 		self.__cookie = cookies.SimpleCookie()
+		if self.hasSession():
+			self.__copySession()
 
 	def getCookie(self):
 		return self.__cookie
@@ -72,6 +70,23 @@ class ccookie:
 		self.__cookie[strExpiractionKey] = self.__getEncryptedString(strExpiration)
 		self.__cookie[strExpiractionKey]["path"] = '/'
 		self.__cookie[strExpiractionKey]["expires"] = strExpiration
+
+	def __copySession(self):
+		self.__cookie[self.__SESSION] = self.__CookiesReceived[self.__SESSION].value
+		self.__cookie[self.__SESSION]["domain"] = os.environ["SERVER_NAME"]
+		self.__cookie[self.__SESSION]["path"] = '/'
+		strEncryptedIPKey = self.__getEncryptedString(self.__IP)
+		self.__cookie[strEncryptedIPKey] = self.__CookiesReceived[strEncryptedIPKey].value
+		self.__cookie[strEncryptedIPKey]["path"] = '/'
+		strEncryptedUserKey = self.__getEncryptedString(self.__USER)
+		self.__cookie[strEncryptedUserKey] = self.__CookiesReceived[strEncryptedUserKey].value
+		self.__cookie[strEncryptedUserKey]["path"] = '/'
+		strEncryptedPasswordKey = self.__getEncryptedString(self.__PASSWORD)
+		self.__cookie[strEncryptedPasswordKey] = self.__CookiesReceived[strEncryptedPasswordKey].value
+		self.__cookie[strEncryptedPasswordKey]["path"] = '/'
+		strExpiractionKey = self.__getEncryptedString(self.__EXPIRATION)
+		self.__cookie[strExpiractionKey] = self.__CookiesReceived[strExpiractionKey].value
+		self.__cookie[strExpiractionKey]["path"] = '/'
 
 	def login(self, user, password):
 		self.__updateSessionExpirationTime()
