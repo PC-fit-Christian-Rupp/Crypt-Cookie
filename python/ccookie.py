@@ -35,11 +35,11 @@ class ccookie:
 		self.__timedeltaMinutes = timedeltaMinutes
 		self.getKey()
 		self.getInitialVector()
+		self.__cookie = cookies.SimpleCookie()
 		if "HTTP_COOKIE" in os.environ:
 			self.__CookiesReceived = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
-		self.__cookie = cookies.SimpleCookie()
-		if (self.__SESSION in self.__CookiesReceived):
-			self.__copySession()
+			if (self.__SESSION in self.__CookiesReceived):
+				self.__copySession()
 
 	def getCookie(self):
 		return self.__cookie
@@ -150,7 +150,6 @@ class ccookie:
 	def getSessionID(self):
 		return self.__cookie[self.__SESSION].value
 
-
 	def __updateSessionExpirationTime(self):
 		if not self.hasSession():
 			return
@@ -198,12 +197,25 @@ class ccookie:
 			return datetime.datetime.utcnow() + datetime.timedelta(days=90)
 		return datetime.datetime.utcnow() + datetime.timedelta(minutes=self.__timedeltaMinutes)
 
-	def hasKey(self, a):
+	def hasEncryptedKey(self, a):
 		self.__updateSessionExpirationTime()
 		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
 			return 1
 		else:
 			return 0
+
+	def hasNonEncryptedKey(self, a):
+		self.__updateSessionExpirationTime()
+		if a in self.__cookie:
+			return 1
+		else:
+			return 0
+
+	def hasKey(self, a, bEncrypted = True):
+		if bEncrypted:
+			return self.hasEncryptedKey(a)
+		else:
+			return self.hasNonEncryptedKey(a)
 
 	def __keyErrorHandler(self, function, enckey):
 		msg = 'The function '+function+' produces a keyerror with the key '+enckey+'! Please call the website operators with this message!'
@@ -235,7 +247,7 @@ class ccookie:
 		else:
 			self.addNonEncryptedValue(strKeyWord, value, bSetToRootPath, strExpiration)
 
-	def deleteValue(self, keyword):
+	def deleteEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
@@ -243,13 +255,41 @@ class ccookie:
 			except (KeyError):
 				self.__keyErrorHandler('deleteValue', str(self.__toInt(self.__encrypt(keyword))))
 
-	def getValue(self, keyword):
+	def deleteNonEncryptedValue(self, keyword):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			try:
+				self.__cookie[keyword]["expires"] = self.__TIMEMIN
+			except (KeyError):
+				self.__keyErrorHandler('deleteValue', keyword)
+
+	def deleteValue(self, keyword, bEncrypted = True):
+		if bEncrypted:
+			self.deleteEncryptedValue(keyword)
+		else:
+			self.deleteNonEncryptedValue(keyword)
+
+	def getEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
 			except (KeyError):
 				self.__keyErrorHandler('getValue', str(self.__toInt(self.__encrypt(keyword))))
+
+	def getNonEncryptedValue(self, keyword):
+		self.__updateSessionExpirationTime()
+		if self.isValid():
+			try:
+				return self.__decrypt(self.__toByte(int(self.__cookie[keyword].value)))
+			except (KeyError):
+				self.__keyErrorHandler('getValue', keyword)
+
+	def getValue(self, keyword, bEncrypted = True):
+		if bEncrypted:
+			return self.getEncryptedValue(keyword)
+		else:
+			return self.getNonEncryptedValue(keyword)
 
 	def __encrypt(self, strin):
 		return AES.new(str.encode(self.__key), AES.MODE_CBC, self.__IV).encrypt(self.__pad(strin))
@@ -324,4 +364,3 @@ class ccookie:
 	def __validateVector(self):
 		if (self.__IV != None) and (len(self.__IV) != 16):
 			raise Exception("invalid vector")
-		
