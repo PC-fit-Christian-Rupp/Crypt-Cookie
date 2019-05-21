@@ -36,6 +36,7 @@ class ccookie:
 		self.getKey()
 		self.getInitialVector()
 		self.__cookie = cookies.SimpleCookie()
+		self.__CookiesReceived = None
 		if "HTTP_COOKIE" in os.environ:
 			self.__CookiesReceived = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
 			if (self.__SESSION in self.__CookiesReceived):
@@ -201,6 +202,8 @@ class ccookie:
 		self.__updateSessionExpirationTime()
 		if str(self.__toInt(self.__encrypt(a))) in self.__cookie:
 			return 1
+		if self.hasKeyRecieved(self.__getEncryptedString(a)):
+			return 1
 		else:
 			return 0
 
@@ -208,8 +211,16 @@ class ccookie:
 		self.__updateSessionExpirationTime()
 		if a in self.__cookie:
 			return 1
+		if self.hasKeyRecieved(a):
+			return 1
 		else:
 			return 0
+
+	def hasKeyRecieved(self, a):
+		if self.__CookiesReceived is not None:
+			if a in self.__CookiesReceived:
+				return 1
+		return 0
 
 	def hasKey(self, a, bEncrypted = True):
 		if bEncrypted:
@@ -250,6 +261,8 @@ class ccookie:
 	def deleteEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
+			if self.hasKeyRecieved(self.__getEncryptedString(keyword)):
+				self.__CookiesReceived[str(self.__toInt(self.__encrypt(keyword)))]["expires"] = self.__TIMEMIN
 			try:
 				self.__cookie[str(self.__toInt(self.__encrypt(keyword)))]["expires"] = self.__TIMEMIN
 			except (KeyError):
@@ -258,6 +271,8 @@ class ccookie:
 	def deleteNonEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
+			if self.hasKeyRecieved(keyword):
+				self.__CookiesReceived[keyword]["expires"] = self.__TIMEMIN
 			try:
 				self.__cookie[keyword]["expires"] = self.__TIMEMIN
 			except (KeyError):
@@ -272,6 +287,8 @@ class ccookie:
 	def getEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
+			if self.hasKeyRecieved(self.__getEncryptedString(keyword)):
+				return self.__decrypt(self.__toByte(int(self.__CookiesReceived[str(self.__toInt(self.__encrypt(keyword)))].value)))
 			try:
 				return self.__decrypt(self.__toByte(int(self.__cookie[str(self.__toInt(self.__encrypt(keyword)))].value)))
 			except (KeyError):
@@ -280,8 +297,10 @@ class ccookie:
 	def getNonEncryptedValue(self, keyword):
 		self.__updateSessionExpirationTime()
 		if self.isValid():
+			if self.hasKeyRecieved(keyword):
+				return self.__CookiesReceived[keyword].value
 			try:
-				return self.__decrypt(self.__toByte(int(self.__cookie[keyword].value)))
+				return self.__cookie[keyword].value
 			except (KeyError):
 				self.__keyErrorHandler('getValue', keyword)
 
